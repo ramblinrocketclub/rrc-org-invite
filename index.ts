@@ -1,14 +1,14 @@
 import { Router } from 'itty-router'
 //import '@cloudflare/workers-types'
 
-/* global SLACK_SIGNING_SECRET */
-
-const SIGN_VERSION = 'v0' // per documentation, this is always "v0"
+// REQUIRED ENVIRONMENT VARIABLES
 // const SLACK_SIGNING_SECRET_RRC
 // const SLACK_SIGNING_SECRET_HAB
 // const SLACK_SIGNING_SECRET_GTXR
 // const GITHUB_USERNAME
 // const GITHUB_TOKEN
+
+const SIGN_VERSION = 'v0' // per documentation, this is always "v0"
 
 /**
  * Verify that a request actually came from Slack using our Signing Secret
