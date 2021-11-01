@@ -1,4 +1,6 @@
 import { Router } from 'itty-router'
+import 'bindings.d.ts'
+//import '@cloudflare/workers-types'
 
 /* global SLACK_SIGNING_SECRET */
 
@@ -19,14 +21,18 @@ const SIGN_VERSION = 'v0' // per documentation, this is always "v0"
  * @param {Request} request incoming request purportedly from Slack
  * @returns {Promise<boolean>} true if the signature verification was valid
  */
-async function verifySlackSignature(request, secret) {
+async function verifySlackSignature(request: Request, secret: string) {
     const timestamp = request.headers.get('x-slack-request-timestamp')
 
     console.log("verifySlackSignature")
     console.log(timestamp)
 
     // remove starting 'v0=' from the signature header
-    const signatureStr = request.headers.get('x-slack-signature').substring(3)
+    const header = request.headers.get('x-slack-signature');
+    if (!header) {
+        return false;
+    }
+    const signatureStr = header.substring(3)
     // convert the hex string of x-slack-signature header to binary
     const signature = hexToBytes(signatureStr)
 
@@ -52,6 +58,10 @@ async function verifySlackSignature(request, secret) {
     return verified
 }
 
+interface GithubResponse {
+    id: string
+}
+
 /**
  * Modified version of hex to bytes function posted here:
  * https://stackoverflow.com/a/34356351/489667
@@ -59,7 +69,7 @@ async function verifySlackSignature(request, secret) {
  * @param {string} hex a string of hexadecimal characters
  * @returns {ArrayBuffer} binary form of the hexadecimal string
  */
-function hexToBytes(hex) {
+function hexToBytes(hex: string) {
     const bytes = new Uint8Array(hex.length / 2)
     for (let c = 0; c < hex.length; c += 2) {
         bytes[c / 2] = parseInt(hex.substr(c, 2), 16)
@@ -68,7 +78,7 @@ function hexToBytes(hex) {
     return bytes.buffer
 }
 
-const verifySlackSignatureRRC = async request => {
+const verifySlackSignatureRRC = async (request: Request) => {
     const verified = await verifySlackSignature(
         request,
         SLACK_SIGNING_SECRET_RRC
@@ -79,7 +89,7 @@ const verifySlackSignatureRRC = async request => {
     }
 }
 
-const verifySlackSignatureHAB = async request => {
+const verifySlackSignatureHAB = async (request: Request) => {
     const verified = await verifySlackSignature(
         request,
         SLACK_SIGNING_SECRET_HAB
@@ -89,7 +99,7 @@ const verifySlackSignatureHAB = async request => {
     }
 }
 
-const verifySlackSignatureGTXR = async request => {
+const verifySlackSignatureGTXR = async (request: Request) => {
     const verified = await verifySlackSignature(
         request,
         SLACK_SIGNING_SECRET_GTXR
@@ -99,7 +109,7 @@ const verifySlackSignatureGTXR = async request => {
     }
 }
 
-async function handleInviteRequest(request) {
+async function handleInviteRequest(request: Request) {
     const body = await request.text()
     const formData = new URLSearchParams(body)
     const username = formData.get('text')
@@ -128,7 +138,10 @@ async function handleInviteRequest(request) {
     }
 
     const githubUsernameJson = await githubUsername.json()
-    let id = githubUsernameJson.id
+    if (!(githubUsernameJson as GithubResponse).hasOwnProperty('id')) {
+        return new Response('Bad response from GitHub!!', { status: 200 })
+    }
+    let id = (githubUsernameJson as GithubResponse).id
     //console.log('github username headers: ' + JSON.stringify(githubUsername.headers))
     //console.log("github username json response: " + JSON.stringify(githubUsernameJson))
 
@@ -160,8 +173,8 @@ async function handleInviteRequest(request) {
 
     return new Response(
         'User ' +
-            username +
-            'invited to the RRC organization. Please check your email!',
+        username +
+        'invited to the RRC organization. Please check your email!',
         { status: 200 }
     )
 }

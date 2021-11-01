@@ -6,11 +6,15 @@
     "main": "index.js",
     "scripts": {
         "test": "echo \"Error: no test specified\" && exit 1",
-        "format": "prettier --write '**/*.{js,css,json,md}'"
+        "format": "prettier --write 'index.ts'",
+        "build": "esbuild index.ts --bundle --outfile=index.js",
+        "format:check": "prettier index.ts --check"
     },
     "author": "Adit Sachde <23707194+aditsachde@users.noreply.github.com>",
     "license": "ISC",
     "devDependencies": {
+        "@cloudflare/workers-types": "^3.0.0",
+        "esbuild": "^0.13.12",
         "prettier": "^1.17.0"
     },
     "dependencies": {
