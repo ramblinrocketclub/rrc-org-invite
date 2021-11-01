@@ -1,4 +1,5 @@
 import { Router } from 'itty-router'
+import 'bindings.d.ts'
 //import '@cloudflare/workers-types'
 
 /* global SLACK_SIGNING_SECRET */
@@ -23,13 +24,13 @@ const SIGN_VERSION = 'v0' // per documentation, this is always "v0"
 async function verifySlackSignature(request: Request, secret: string) {
     const timestamp = request.headers.get('x-slack-request-timestamp')
 
-    console.log('verifySlackSignature')
+    console.log("verifySlackSignature")
     console.log(timestamp)
 
     // remove starting 'v0=' from the signature header
-    const header = request.headers.get('x-slack-signature')
+    const header = request.headers.get('x-slack-signature');
     if (!header) {
-        return false
+        return false;
     }
     const signatureStr = header.substring(3)
     // convert the hex string of x-slack-signature header to binary
@@ -83,7 +84,7 @@ const verifySlackSignatureRRC = async (request: Request) => {
         SLACK_SIGNING_SECRET_RRC
     )
     if (!verified) {
-        console.log('not authenticated')
+        console.log("not authenticated")
         return new Response('Not Authenticated', { status: 401 })
     }
 }
@@ -115,15 +116,16 @@ async function handleInviteRequest(request: Request) {
     const usernameUrl = 'https://api.github.com/users/' + username
     const orgUrl = 'https://api.github.com/orgs/ramblinrocketclub/invitations'
 
-    console.log('handleInviteRequest')
-    console.log('username ' + username)
+    console.log("handleInviteRequest")
+    console.log("username " + username)
 
     const githubUsername = await fetch(usernameUrl, {
         method: 'GET',
         headers: {
             'User-Agent': 'aditsachde',
-            Accept: 'application/vnd.github.v3+json',
-            Authorization: 'token ' + GITHUB_TOKEN,
+            'Accept': 'application/vnd.github.v3+json',
+            'Authorization':
+                'token ' + GITHUB_TOKEN,
         },
     })
 
@@ -143,7 +145,7 @@ async function handleInviteRequest(request: Request) {
     //console.log('github username headers: ' + JSON.stringify(githubUsername.headers))
     //console.log("github username json response: " + JSON.stringify(githubUsernameJson))
 
-    console.log('inviting user: ' + id)
+    console.log("inviting user: " + id)
 
     const stringifiedBody = JSON.stringify({
         invitee_id: id,
@@ -154,8 +156,9 @@ async function handleInviteRequest(request: Request) {
         method: 'POST',
         headers: {
             'User-Agent': 'aditsachde',
-            Accept: 'application/vnd.github.v3+json',
-            Authorization: 'token ' + GITHUB_TOKEN,
+            'Accept': 'application/vnd.github.v3+json',
+            'Authorization':
+                'token ' + GITHUB_TOKEN,
         },
         body: stringifiedBody,
     })
@@ -165,16 +168,13 @@ async function handleInviteRequest(request: Request) {
     console.log(githubInvite)
 
     if (inviteStatus !== 201) {
-        return new Response(
-            'Failed to create invite! You may already be in the organization!',
-            { status: 200 }
-        )
+        return new Response('Failed to create invite! You may already be in the organization!', { status: 200 })
     }
 
     return new Response(
         'User ' +
-            username +
-            'invited to the RRC organization. Please check your email!',
+        username +
+        'invited to the RRC organization. Please check your email!',
         { status: 200 }
     )
 }
@@ -183,17 +183,17 @@ async function handleInviteRequest(request: Request) {
 const router = Router()
 
 router.post('/rrc', verifySlackSignatureRRC, async request => {
-    console.log('handling invite request @ rrc')
+    console.log("handling invite request @ rrc")
     return await handleInviteRequest(request)
 })
 
 router.post('/hab', verifySlackSignatureHAB, async request => {
-    console.log('handling invite request @ hab')
+    console.log("handling invite request @ hab")
     return await handleInviteRequest(request)
 })
 
 router.post('/gtxr', verifySlackSignatureGTXR, async request => {
-    console.log('handling invite request @ gtxr')
+    console.log("handling invite request @ gtxr")
     return await handleInviteRequest(request)
 })
 
