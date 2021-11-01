@@ -11,6 +11,7 @@
     "author": "Adit Sachde <23707194+aditsachde@users.noreply.github.com>",
     "license": "ISC",
     "devDependencies": {
+        "@cloudflare/workers-types": "^3.0.0",
         "prettier": "^1.17.0"
     },
     "dependencies": {
